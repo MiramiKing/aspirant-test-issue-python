@@ -7,13 +7,19 @@ from models import RegisterUserRequest, UserModel
 app = FastAPI()
 
 
-@app.get('/create-city/', summary='Create City', description='Создание города по его названию')
+@app.get('/create-city/', summary='Create City',
+         description='Создание города по его названию')
 def create_city(city: str = Query(description="Название города", default=None)):
     if city is None:
-        raise HTTPException(status_code=400, detail='Параметр city должен быть указан')
+        raise HTTPException(
+            status_code=400, detail='Параметр city должен быть указан'
+        )
     check = CheckCityExisting()
     if not check.check_existing(city):
-        raise HTTPException(status_code=400, detail='Параметр city должен быть существующим городом')
+        raise HTTPException(
+            status_code=400,
+            detail='Параметр city должен быть существующим городом'
+        )
 
     city_object = Session().query(City).filter(City.name == city.capitalize()).first()
     if city_object is None:
@@ -22,7 +28,8 @@ def create_city(city: str = Query(description="Название города", d
         s.add(city_object)
         s.commit()
 
-    return {'id': city_object.id, 'name': city_object.name, 'weather': city_object.weather}
+    return {'id': city_object.id, 'name': city_object.name,
+            'weather': city_object.weather}
 
 
 @app.post('/get-cities/', summary='Get Cities')
@@ -76,8 +83,12 @@ def register_user(user: RegisterUserRequest):
 
 
 @app.get('/all-picnics/', summary='All Picnics', tags=['picnic'])
-def all_picnics(datetime: dt.datetime = Query(default=None, description='Время пикника (по умолчанию не задано)'),
-                past: bool = Query(default=True, description='Включая уже прошедшие пикники')):
+def all_picnics(datetime: dt.datetime = Query(
+    default=None, description='Время пикника (по умолчанию не задано)'
+),
+        past: bool = Query(
+            default=True, description='Включая уже прошедшие пикники'
+        )):
     """
     Список всех пикников
     """
@@ -89,7 +100,9 @@ def all_picnics(datetime: dt.datetime = Query(default=None, description='Вре�
 
     return [{
         'id': pic.id,
-        'city': Session().query(City).filter(City.id == pic.id).first().name,
+        'city': Session().query(City).filter(
+            City.id == pic.city_id
+        ).first().name,
         'time': pic.time,
         'users': [
             {
@@ -98,22 +111,27 @@ def all_picnics(datetime: dt.datetime = Query(default=None, description='Вре�
                 'surname': pr.user.surname,
                 'age': pr.user.age,
             }
-            for pr in Session().query(PicnicRegistration).filter(PicnicRegistration.picnic_id == pic.id)],
+            for pr in Session().query(PicnicRegistration).filter(
+                PicnicRegistration.picnic_id == pic.id
+            )],
     } for pic in picnics]
 
 
 @app.get('/picnic-add/', summary='Picnic Add', tags=['picnic'])
 def picnic_add(city_id: int = None, datetime: dt.datetime = None):
-    p = Picnic(city_id=city_id, time=datetime)
-    s = Session()
-    s.add(p)
-    s.commit()
+    if city_id and datetime:
+        p = Picnic(city_id=city_id, time=datetime)
+        s = Session()
+        s.add(p)
+        s.commit()
 
-    return {
-        'id': p.id,
-        'city': Session().query(City).filter(City.id == p.id).first().name,
-        'time': p.time,
-    }
+        return {
+            'id': p.id,
+            'city': Session().query(City).filter(
+                City.id == p.city_id
+            ).first().name,
+            'time': p.time,
+        }
 
 
 @app.get('/picnic-register/', summary='Picnic Registration', tags=['picnic'])
@@ -122,5 +140,6 @@ def register_to_picnic(*_, **__, ):
     Регистрация пользователя на пикник
     (Этот эндпойнт необходимо реализовать в процессе выполнения тестового задания)
     """
+
     # TODO: Сделать логику
     return ...
