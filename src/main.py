@@ -31,16 +31,29 @@ def cities_list(q: str = Query(description="Название города", defa
     Получение списка городов
     """
     cities = Session().query(City).all()
+    if q:
+        city = Session().query(City).filter(City.name == q.title()).first()
+        if city:
+            return {'id': city.id, 'name': city.name, 'weather': city.weather}
 
-    return [{'id': city.id, 'name': city.name, 'weather': city.weather} for city in cities]
+    return [{
+        'id': city.id, 'name': city.name, 'weather': city.weather
+    } for city in cities]
 
 
-@app.post('/users-list/', summary='')
-def users_list():
+@app.post('/users-list/', summary='Get users')
+def users_list(
+        min_age: int = Query(description="Минимальный возраст", default=None),
+        max_age: int = Query(description="Максимальный возраст", default=None)
+):
     """
     Список пользователей
     """
     users = Session().query(User).all()
+    if min_age:
+        users = Session().query(User).filter(User.age > min_age)
+    if max_age:
+        users = Session().query(User).filter(User.age < max_age)
     return [{
         'id': user.id,
         'name': user.name,
@@ -104,11 +117,10 @@ def picnic_add(city_id: int = None, datetime: dt.datetime = None):
 
 
 @app.get('/picnic-register/', summary='Picnic Registration', tags=['picnic'])
-def register_to_picnic(*_, **__,):
+def register_to_picnic(*_, **__, ):
     """
     Регистрация пользователя на пикник
     (Этот эндпойнт необходимо реализовать в процессе выполнения тестового задания)
     """
     # TODO: Сделать логику
     return ...
-
