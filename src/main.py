@@ -142,25 +142,23 @@ def register_to_picnic(
     """
     Регистрация пользователя на пикник
     """
-    picnic = PicnicRegistration(user_id=user_id, picnic_id=picnic_id)
+    new_picnic = PicnicRegistration(user_id=user_id, picnic_id=picnic_id)
     session = Session()
-    session.add(picnic)
+    session.add(new_picnic)
     session.commit()
     picnic_obj = Session().query(Picnic).filter(Picnic.id == picnic_id).first()
     return {
-        'id': picnic.id,
+        'id': picnic_obj.id,
         'city': Session().query(City).filter(
             City.id == picnic_obj.city_id
         ).first().name,
         'time': picnic_obj.time,
         'users': [
             {
-                'id': pr.user.id,
-                'name': pr.user.name,
-                'surname': pr.user.surname,
-                'age': pr.user.age,
+                'id': picnic.user.id,
+                'name': picnic.user.name,
+                'surname': picnic.user.surname,
+                'age': picnic.user.age,
             }
-            for pr in session.query(PicnicRegistration).filter(
-                PicnicRegistration.picnic_id == picnic.id
-            )],
+            for picnic in picnic_obj.users],
     }
