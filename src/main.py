@@ -1,6 +1,6 @@
 import datetime as dt
 from fastapi import FastAPI, HTTPException, Query
-from database import engine, Session, Base, City, User, Picnic, PicnicRegistration
+from database import engine, Session, City, User, Picnic, PicnicRegistration
 from external_requests import CheckCityExisting, GetWeatherRequest
 from models import RegisterUserRequest, UserModel
 
@@ -21,7 +21,9 @@ def create_city(city: str = Query(description="Название города", d
             detail='Параметр city должен быть существующим городом'
         )
 
-    city_object = Session().query(City).filter(City.name == city.capitalize()).first()
+    city_object = Session().query(City).filter(
+        City.name == city.capitalize()
+    ).first()
     if city_object is None:
         city_object = City(name=city.capitalize())
         s = Session()
@@ -83,9 +85,10 @@ def register_user(user: RegisterUserRequest):
 
 
 @app.get('/all-picnics/', summary='All Picnics', tags=['picnic'])
-def all_picnics(datetime: dt.datetime = Query(
-    default=None, description='Время пикника (по умолчанию не задано)'
-),
+def all_picnics(
+        datetime: dt.datetime = Query(
+            default=None, description='Время пикника (по умолчанию не задано)'
+        ),
         past: bool = Query(
             default=True, description='Включая уже прошедшие пикники'
         )):
@@ -93,7 +96,7 @@ def all_picnics(datetime: dt.datetime = Query(
     Список всех пикников
     """
     picnics = Session().query(Picnic)
-    if datetime is not None:
+    if datetime:
         picnics = picnics.filter(Picnic.time == datetime)
     if not past:
         picnics = picnics.filter(Picnic.time >= dt.datetime.now())
@@ -106,14 +109,12 @@ def all_picnics(datetime: dt.datetime = Query(
         'time': pic.time,
         'users': [
             {
-                'id': pr.user.id,
-                'name': pr.user.name,
-                'surname': pr.user.surname,
-                'age': pr.user.age,
+                'id': picnic.user.id,
+                'name': picnic.user.name,
+                'surname': picnic.user.surname,
+                'age': picnic.user.age,
             }
-            for pr in Session().query(PicnicRegistration).filter(
-                PicnicRegistration.picnic_id == pic.id
-            )],
+            for picnic in pic.users],
     } for pic in picnics]
 
 
