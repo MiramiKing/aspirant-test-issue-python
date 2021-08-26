@@ -30,8 +30,11 @@ def create_city(city: str = Query(description="Название города", d
         s.add(city_object)
         s.commit()
 
-    return {'id': city_object.id, 'name': city_object.name,
-            'weather': city_object.weather}
+    return {
+        'id': city_object.id,
+        'name': city_object.name,
+        'weather': city_object.weather
+    }
 
 
 @app.post('/get-cities/', summary='Get Cities')
