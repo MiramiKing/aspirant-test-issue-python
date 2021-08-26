@@ -1,7 +1,9 @@
 import datetime as dt
+
 from fastapi import FastAPI, HTTPException, Query
-from database import engine, Session, City, User, Picnic, PicnicRegistration
-from external_requests import CheckCityExisting, GetWeatherRequest
+
+from database import Session, City, User, Picnic, PicnicRegistration
+from external_requests import GetWeatherRequest
 from models import RegisterUserRequest, UserModel
 
 app = FastAPI()
@@ -14,7 +16,7 @@ def create_city(city: str = Query(description="Название города", d
         raise HTTPException(
             status_code=400, detail='Параметр city должен быть указан'
         )
-    check = CheckCityExisting()
+    check = GetWeatherRequest()
     if not check.check_existing(city):
         raise HTTPException(
             status_code=400,
