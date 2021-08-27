@@ -12,6 +12,9 @@ app = FastAPI()
 @app.get('/create-city/', summary='Create City',
          description='Создание города по его названию')
 def create_city(city: str = Query(description="Название города", default=None)):
+    """
+    Добавление нового города, если он присутсвует в сервисе погоды
+    """
     if city is None:
         raise HTTPException(
             status_code=400, detail='Параметр city должен быть указан'
@@ -124,20 +127,21 @@ def all_picnics(
 
 
 @app.get('/picnic-add/', summary='Picnic Add', tags=['picnic'])
-def picnic_add(city_id: int = None, datetime: dt.datetime = None):
-    if city_id and datetime:
-        p = Picnic(city_id=city_id, time=datetime)
-        s = Session()
-        s.add(p)
-        s.commit()
+def picnic_add(city_id: int = ..., datetime: dt.datetime = ...):
+    if datetime < dt.datetime.now():
+        return {'error': 'Необходимо ввести будущую дату'}
+    p = Picnic(city_id=city_id, time=datetime)
+    s = Session()
+    s.add(p)
+    s.commit()
 
-        return {
-            'id': p.id,
-            'city': Session().query(City).filter(
-                City.id == p.city_id
-            ).first().name,
-            'time': p.time,
-        }
+    return {
+        'id': p.id,
+        'city': Session().query(City).filter(
+            City.id == p.city_id
+        ).first().name,
+        'time': p.time,
+    }
 
 
 @app.get('/picnic-register/', summary='Picnic Registration', tags=['picnic'])

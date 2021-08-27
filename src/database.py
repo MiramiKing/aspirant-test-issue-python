@@ -10,6 +10,7 @@ from external_requests import GetWeatherRequest
 
 load_dotenv()
 
+# Получение информации о базе данных
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_HOST = os.getenv("DB_HOST")
