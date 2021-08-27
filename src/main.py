@@ -127,7 +127,17 @@ def all_picnics(
 
 
 @app.get('/picnic-add/', summary='Picnic Add', tags=['picnic'])
-def picnic_add(city_id: int = ..., datetime: dt.datetime = ...):
+def picnic_add(
+        city_id: int = Query(
+            ..., description='Идентификатор города'
+        ),
+        datetime: dt.datetime = Query(
+            ..., description='Время пикника'
+        ),
+):
+    """
+    Создание пикника
+    """
     if datetime < dt.datetime.now():
         return {'error': 'Необходимо ввести будущую дату'}
     p = Picnic(city_id=city_id, time=datetime)
